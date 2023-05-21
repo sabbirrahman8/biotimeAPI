@@ -45,8 +45,9 @@ def get_gatepass(eid,token):
 # Printing Table # START
 def print_table(api_data):
     
-    headers = ["Gatepass ID", "Name", "Agency", "Fingerprint", "Registerd On"]
-    table = PrettyTable(headers)
+    
+    table = PrettyTable()
+    table.field_names = ["Gatepass ID", "Name", "Agency", "Agency Code", "Fingerprint", "Registerd On"]
     #Add the data rows to the table
     sorted_emp_data = sorted(api_data, key=lambda x: (x[1], x[0]))
     
@@ -54,7 +55,19 @@ def print_table(api_data):
         table.add_row(row)
 
     #Print the table
-    
+   
+
+    # Iterate through each row in the table
+    for row in table._rows:
+    # Check if the value in the second column is "NOT FOUND"
+        if "NOT FOUND" in row:
+            # Get the index of the row
+            row_index = table._rows.index(row)
+            
+            # Modify the text color of the row
+            table._rows[row_index] = [f"\033[93m{cell}\033[0m" for cell in row]
+
+
     print(table)
     
 # Printing Table # END
@@ -66,7 +79,7 @@ else:
       if '-i' not in os.sys.argv:
         emp_data= []
         
-        user_input= os.sys.argv[1]
+        user_input= os.sys.argv[3]
         
         gatepass_list = user_input.split(",")
         
@@ -77,14 +90,17 @@ else:
             if "data" in api_response.json() and len(api_response.json()["data"]) > 0:
                 emp_name=api_response.json()['data'][0]['full_name']
                 emp_dept=api_response.json()['data'][0]['department']['dept_name']
+                dept_code=api_response.json()['data'][0]['department']['dept_code']
                 emp_fingerprint=api_response.json()['data'][0]['fingerprint']
                 emp_registeredOn=api_response.json()['data'][0]['hire_date']
-                emp_data.append([item, emp_name, emp_dept, emp_fingerprint, emp_registeredOn])
+                emp_data.append([item, emp_name, emp_dept, dept_code, emp_fingerprint, emp_registeredOn])
             else:
-                emp_data.append([item, "NOT FOUND", "", "", ""])
+                emp_data.append([item, "NOT FOUND", "", "", "", ""])
         
-        print_table(emp_data)
+        
 
+        print_table(emp_data)
+        
         
       else:
         i_index = os.sys.argv.index('-i')
